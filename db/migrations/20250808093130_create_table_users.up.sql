@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS users (
+	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	username VARCHAR(64) NOT NULL,
+	`password` VARCHAR(255) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL,
+	PRIMARY KEY (id),
+    UNIQUE KEY index_users_on_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
