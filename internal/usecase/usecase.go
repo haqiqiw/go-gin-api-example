@@ -17,3 +17,10 @@ type UserUsecase interface {
 	FindByID(ctx context.Context, req *model.GetUserRequest) (*model.UserResponse, error)
 	UpdateByID(ctx context.Context, req *model.UpdateUserRequest) error
 }
+
+type TodoUsecase interface {
+	Create(ctx context.Context, req *model.CreateTodoRequest) (*model.TodoResponse, error)
+	List(ctx context.Context, req *model.SearchTodoRequest) ([]model.TodoResponse, int, error)
+	FindByID(ctx context.Context, req *model.GetTodoRequest) (*model.TodoResponse, error)
+	UpdateByID(ctx context.Context, req *model.UpdateTodoRequest) error
+}

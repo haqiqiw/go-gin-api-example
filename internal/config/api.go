@@ -38,18 +38,22 @@ func NewApi(cfg *ApiConfig) {
 	authMiddleware := middleware.NewAuthMiddleware(cfg.Log, redisClient, jwtToken)
 
 	userRepository := repository.NewUserRepository(cfg.DB)
+	todoRepository := repository.NewTodoRepository(cfg.DB)
 
 	authUsecase := usecase.NewAuthUsecase(cfg.Log, redisClient, jwtToken, refreshToken, userRepository)
 	userUsecase := usecase.NewUserUsecase(cfg.Log, userRepository)
+	todoUsecase := usecase.NewTodoUsecase(cfg.Log, todoRepository)
 
 	authController := http.NewAuthController(cfg.Log, cfg.Validate, authUsecase, userUsecase)
 	userController := http.NewUserController(cfg.Log, cfg.Validate, userUsecase)
+	todoController := http.NewTodoController(cfg.Log, cfg.Validate, todoUsecase)
 
 	routeCfg := route.RouteConfig{
 		App:            cfg.App,
 		AuthMiddlware:  authMiddleware,
 		AuthController: authController,
 		UserController: userController,
+		TodoController: todoController,
 	}
 	routeCfg.Setup()
 }

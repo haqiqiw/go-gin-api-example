@@ -16,6 +16,7 @@ type RouteConfig struct {
 	AuthMiddlware  fiber.Handler
 	AuthController *http.AuthController
 	UserController *http.UserController
+	TodoController *http.TodoController
 }
 
 func (c *RouteConfig) Setup() {
@@ -54,4 +55,9 @@ func (c *RouteConfig) SetupAuthRoute() {
 	c.App.Get("/api/users", c.AuthMiddlware, c.UserController.Search)
 	c.App.Get("/api/users/me", c.AuthMiddlware, c.UserController.Me)
 	c.App.Patch("/api/users/me", c.AuthMiddlware, c.UserController.Update)
+
+	c.App.Post("/api/todos", c.AuthMiddlware, c.TodoController.Create)
+	c.App.Get("/api/todos", c.AuthMiddlware, c.TodoController.Search)
+	c.App.Get("/api/todos/:id", c.AuthMiddlware, c.TodoController.Get)
+	c.App.Patch("/api/todos/:id", c.AuthMiddlware, c.TodoController.Update)
 }

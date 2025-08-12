@@ -31,6 +31,8 @@ func (r *UserRepository) Create(ctx context.Context, user *entity.User) error {
 
 	id, _ := res.LastInsertId()
 	user.ID = uint64(id)
+	user.CreatedAt = now
+	user.UpdatedAt = now
 
 	return nil
 }

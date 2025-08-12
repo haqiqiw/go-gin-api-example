@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type CreateUserRequest struct {
 	Username string `json:"username" validate:"required,min=8,max=64"`
 	Password string `json:"password" validate:"required,min=8,max=64"`
@@ -25,8 +23,8 @@ type UpdateUserRequest struct {
 }
 
 type UserResponse struct {
-	ID        uint64    `json:"id"`
-	Username  string    `json:"username"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint64 `json:"id"`
+	Username  string `json:"username"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }

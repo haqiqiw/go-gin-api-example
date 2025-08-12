@@ -14,3 +14,10 @@ type UserRepository interface {
 	UpdateByID(ctx context.Context, req *model.UpdateUserRequest) error
 	CountByUsername(ctx context.Context, username string) (int, error)
 }
+
+type TodoRepository interface {
+	Create(ctx context.Context, user *entity.Todo) error
+	List(ctx context.Context, req *model.SearchTodoRequest) ([]entity.Todo, int, error)
+	FindByID(ctx context.Context, id uint64) (*entity.Todo, error)
+	UpdateByID(ctx context.Context, req *model.UpdateTodoRequest) error
+}

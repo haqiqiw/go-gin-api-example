@@ -100,13 +100,15 @@ func (c *UserController) Me(ctx *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	id, err := strconv.ParseUint(claims.UserID, 10, 64)
+	userID, err := strconv.ParseUint(claims.UserID, 10, 64)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to convert id", err)
 		return fiber.ErrBadRequest
 	}
 
-	res, err := c.UserUsecase.FindByID(ctx.UserContext(), &model.GetUserRequest{ID: id})
+	res, err := c.UserUsecase.FindByID(ctx.UserContext(), &model.GetUserRequest{
+		ID: userID,
+	})
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to get user", err)
 		return err
@@ -124,9 +126,9 @@ func (c *UserController) Update(ctx *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	id, err := strconv.ParseUint(claims.UserID, 10, 64)
+	userID, err := strconv.ParseUint(claims.UserID, 10, 64)
 	if err != nil {
-		LogWarn(ctx, c.Log, "failed to convert id", err)
+		LogWarn(ctx, c.Log, "failed to convert user id", err)
 		return fiber.ErrBadRequest
 	}
 
@@ -143,7 +145,7 @@ func (c *UserController) Update(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	request.ID = id
+	request.ID = userID
 	err = c.UserUsecase.UpdateByID(ctx.UserContext(), request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to update user", err)

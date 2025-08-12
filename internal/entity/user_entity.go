@@ -6,6 +6,6 @@ type User struct {
 	ID        uint64    `db:"id"`
 	Username  string    `db:"username"`
 	Password  string    `db:"password"`
-	CreatedAt time.Time `db:"id"`
-	UpdatedAt time.Time `db:"id"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
