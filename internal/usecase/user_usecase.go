@@ -3,7 +3,9 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"go-api-example/internal/db"
 	"go-api-example/internal/entity"
+	"go-api-example/internal/messaging"
 	"go-api-example/internal/model"
 	"go-api-example/internal/model/serializer"
 
@@ -14,12 +16,16 @@ import (
 
 type userUsecase struct {
 	Log            *zap.Logger
+	TX             db.Transactioner
+	UserProducer   *messaging.UserProducer
 	UserRepository UserRepository
 }
 
-func NewUserUsecase(log *zap.Logger, userRepository UserRepository) UserUsecase {
+func NewUserUsecase(log *zap.Logger, tx db.Transactioner, userProducer *messaging.UserProducer, userRepository UserRepository) UserUsecase {
 	return &userUsecase{
 		Log:            log,
+		TX:             tx,
+		UserProducer:   userProducer,
 		UserRepository: userRepository,
 	}
 }
@@ -44,9 +50,22 @@ func (c *userUsecase) Create(ctx context.Context, req *model.CreateUserRequest) 
 		Password: string(password),
 	}
 
-	err = c.UserRepository.Create(ctx, user)
+	err = c.TX.Do(ctx, func(exec db.Executor) error {
+		txErr := c.UserRepository.Create(ctx, exec, user)
+		if txErr != nil {
+			return fmt.Errorf("failed to create user: %w", err)
+		}
+
+		event := serializer.UserToEvent(user)
+		txErr = c.UserProducer.Send(event)
+		if txErr != nil {
+			return fmt.Errorf("failed to send user event: %w", err)
+		}
+
+		return nil
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+		return nil, err
 	}
 
 	return serializer.UserToResponse(user), nil

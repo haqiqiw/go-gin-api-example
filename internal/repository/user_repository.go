@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"go-api-example/internal/db"
 	"go-api-example/internal/entity"
 	"go-api-example/internal/model"
 	"strings"
@@ -20,11 +21,11 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user *entity.User) error {
+func (r *UserRepository) Create(ctx context.Context, exec db.Executor, user *entity.User) error {
 	now := time.Now()
 	query := `INSERT INTO users (username, password, created_at, updated_at) VALUES (?, ?, ?, ?)`
 
-	res, err := r.DB.ExecContext(ctx, query, user.Username, user.Password, now, now)
+	res, err := exec.ExecContext(ctx, query, user.Username, user.Password, now, now)
 	if err != nil {
 		return err
 	}

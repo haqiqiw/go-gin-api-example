@@ -28,6 +28,11 @@ type Env struct {
 	RedistDB   int
 
 	JWTSecretKey string
+
+	KafkaBrokerHost          string
+	KafkaConsumerGroup       string
+	KafkaAutoOffsetReset     string
+	KafkaTopicUserRegistered string
 }
 
 func NewEnv() (*Env, error) {
@@ -56,6 +61,11 @@ func NewEnv() (*Env, error) {
 		RedistDB:   getEnvInt("REDIS_DB", 0),
 
 		JWTSecretKey: getEnvString("JWT_SECRET_KEY", ""),
+
+		KafkaBrokerHost:          getEnvString("KAFKA_BROKER_HOST", "127.0.0.1:9092"),
+		KafkaConsumerGroup:       getEnvString("KAFKA_CONSUMER_GROUP", "api-example"),
+		KafkaAutoOffsetReset:     getEnvString("KAFKA_AUTO_OFFSET_RESET", "latest"),
+		KafkaTopicUserRegistered: getEnvString("KAFKA_TOPIC_USER_REGISTERED", "user-registered"),
 	}
 
 	return cfg, nil

@@ -14,7 +14,7 @@ type transactioner struct {
 	DB *sql.DB
 }
 
-func NewTxHandler(db *sql.DB) Transactioner {
+func NewTransactioner(db *sql.DB) Transactioner {
 	return &transactioner{
 		DB: db,
 	}

@@ -24,3 +24,12 @@ func ListUserToResponse(users []entity.User) []model.UserResponse {
 
 	return res
 }
+
+func UserToEvent(u *entity.User) *model.UserEvent {
+	return &model.UserEvent{
+		ID:        u.ID,
+		Username:  u.Username,
+		CreatedAt: u.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: u.UpdatedAt.Format(time.RFC3339),
+	}
+}
