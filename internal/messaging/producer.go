@@ -9,13 +9,18 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockery --name=KafkaProducer --structname KafkaProducer --outpkg=mocks --output=./../mocks
+type KafkaProducer interface {
+	Produce(msg *kafka.Message, deliveryChan chan kafka.Event) error
+}
+
 type Producer[T model.Event] interface {
 	GetTopic() *string
 	Send(event T) error
 }
 
 type producer[T model.Event] struct {
-	Producer *kafka.Producer
+	Producer KafkaProducer
 	Topic    string
 	Log      *zap.Logger
 }
