@@ -36,7 +36,7 @@ func (p *producer[T]) Send(event T) error {
 			Partition: kafka.PartitionAny,
 		},
 		Value: data,
-		Key:   []byte(event.GetId()),
+		Key:   []byte(event.GetID()),
 	}
 
 	err = p.Producer.Produce(msg, nil)

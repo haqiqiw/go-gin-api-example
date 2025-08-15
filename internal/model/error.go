@@ -41,7 +41,7 @@ type CustomError struct {
 
 func (c *CustomError) Error() string {
 	if len(c.Errors) == 0 {
-		return "no errors"
+		return "No errors"
 	}
 
 	return c.Errors[0].Message

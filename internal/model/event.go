@@ -3,7 +3,7 @@ package model
 import "fmt"
 
 type Event interface {
-	GetId() string
+	GetID() string
 }
 
 type UserEvent struct {
@@ -13,6 +13,6 @@ type UserEvent struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-func (u *UserEvent) GetId() string {
+func (u *UserEvent) GetID() string {
 	return fmt.Sprintf("%d-%s", u.ID, u.Username)
 }
