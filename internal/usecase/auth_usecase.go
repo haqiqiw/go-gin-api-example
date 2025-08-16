@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go-api-example/internal/auth"
 	"go-api-example/internal/model"
+	"go-api-example/internal/storage"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,13 +17,13 @@ import (
 
 type authUsecase struct {
 	Log            *zap.Logger
-	RedisClient    *redis.Client
+	RedisClient    storage.RedisClient
 	JWTToken       auth.JWTToken
 	RefreshToken   auth.RefreshToken
 	UserRepository UserRepository
 }
 
-func NewAuthUsecase(log *zap.Logger, redisClient *redis.Client, jwtToken auth.JWTToken,
+func NewAuthUsecase(log *zap.Logger, redisClient storage.RedisClient, jwtToken auth.JWTToken,
 	refreshToken auth.RefreshToken, userRepository UserRepository) AuthUsecase {
 	return &authUsecase{
 		Log:            log,

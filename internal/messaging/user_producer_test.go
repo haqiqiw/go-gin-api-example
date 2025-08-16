@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ProducerSuite struct {
+type UserProducerSuite struct {
 	suite.Suite
 	logger   *zap.Logger
 	kafka    *mocks.KafkaProducer
@@ -21,24 +21,24 @@ type ProducerSuite struct {
 	topic    string
 }
 
-func (s *ProducerSuite) SetupTest() {
+func (s *UserProducerSuite) SetupTest() {
 	s.logger, _ = zap.NewDevelopment()
 	s.kafka = mocks.NewKafkaProducer(s.T())
 	s.topic = "user-registered"
 	s.producer = messaging.NewUserProducer(s.logger, s.kafka, s.topic)
 }
 
-func (s *ProducerSuite) TearDownTest() {
+func (s *UserProducerSuite) TearDownTest() {
 	s.kafka = mocks.NewKafkaProducer(s.T())
 }
 
-func (s *ProducerSuite) TestProducer_GetTopic() {
+func (s *UserProducerSuite) TestUserProducer_GetTopic() {
 	t := s.producer.GetTopic()
 
 	s.Equal("user-registered", *t)
 }
 
-func (s *ProducerSuite) TestProducer_Send() {
+func (s *UserProducerSuite) TestUserProducer_Send() {
 	tests := []struct {
 		name       string
 		mockFunc   func(k *mocks.KafkaProducer)
@@ -91,6 +91,6 @@ func (s *ProducerSuite) TestProducer_Send() {
 	}
 }
 
-func TestProducerSuite(t *testing.T) {
-	suite.Run(t, new(ProducerSuite))
+func TestUserProducerSuite(t *testing.T) {
+	suite.Run(t, new(UserProducerSuite))
 }

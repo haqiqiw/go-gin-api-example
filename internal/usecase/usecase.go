@@ -18,6 +18,7 @@ type UserUsecase interface {
 	UpdateByID(ctx context.Context, req *model.UpdateUserRequest) error
 }
 
+//go:generate mockery --name=TodoUsecase --structname TodoUsecase --outpkg=mocks --output=./../mocks
 type TodoUsecase interface {
 	Create(ctx context.Context, req *model.CreateTodoRequest) (*model.TodoResponse, error)
 	List(ctx context.Context, req *model.SearchTodoRequest) ([]model.TodoResponse, int, error)

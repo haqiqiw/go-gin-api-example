@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"go-api-example/internal/auth"
+	"go-api-example/internal/storage"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
-func NewAuthMiddleware(logger *zap.Logger, redisClient *redis.Client, jwtToken auth.JWTToken) fiber.Handler {
+func NewAuthMiddleware(logger *zap.Logger, redisClient storage.RedisClient, jwtToken auth.JWTToken) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		authHeader := ctx.Get("Authorization")
 		if authHeader == "" && !strings.HasPrefix(authHeader, "Bearer ") {
