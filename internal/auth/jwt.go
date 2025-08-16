@@ -23,12 +23,14 @@ type JWTToken interface {
 }
 
 type jwtToken struct {
-	SecretKey string
+	SecretKey      string
+	ExpireDuration time.Duration
 }
 
-func NewJWTToken(secretKey string) JWTToken {
+func NewJWTToken(secretKey string, expireDuration time.Duration) JWTToken {
 	return &jwtToken{
-		SecretKey: secretKey,
+		SecretKey:      secretKey,
+		ExpireDuration: expireDuration,
 	}
 }
 
@@ -37,7 +39,7 @@ func (j *jwtToken) Create(userID string) (string, error) {
 	claims := JWTClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(15 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(j.ExpireDuration)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			ID:        uuid.NewString(),
 		},

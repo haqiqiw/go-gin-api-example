@@ -11,6 +11,7 @@ import (
 	"go-api-example/internal/messaging"
 	"go-api-example/internal/repository"
 	"go-api-example/internal/usecase"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/go-playground/validator/v10"
@@ -35,7 +36,7 @@ func NewApi(cfg *ApiConfig) {
 		DB:   cfg.Config.RedistDB,
 	})
 
-	jwtToken := auth.NewJWTToken(cfg.Config.JWTSecretKey)
+	jwtToken := auth.NewJWTToken(cfg.Config.JWTSecretKey, 15*time.Minute)
 	refreshToken := auth.NewRefreshToken()
 
 	authMiddleware := middleware.NewAuthMiddleware(cfg.Log, redisClient, jwtToken)
