@@ -50,7 +50,7 @@ func NewApi(cfg *ApiConfig) {
 	userUsecase := usecase.NewUserUsecase(cfg.Log, cfg.TX, userProducer, userRepository)
 	todoUsecase := usecase.NewTodoUsecase(cfg.Log, todoRepository)
 
-	authController := http.NewAuthController(cfg.Log, cfg.Validate, authUsecase, userUsecase)
+	authController := http.NewAuthController(cfg.Log, cfg.Validate, authUsecase)
 	userController := http.NewUserController(cfg.Log, cfg.Validate, userUsecase)
 	todoController := http.NewTodoController(cfg.Log, cfg.Validate, todoUsecase)
 

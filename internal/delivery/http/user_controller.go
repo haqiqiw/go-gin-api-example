@@ -153,6 +153,6 @@ func (c *UserController) Update(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.
-		Status(fiber.StatusCreated).
-		JSON(model.NewSuccessMessageResponse("User updated", fiber.StatusCreated))
+		Status(fiber.StatusOK).
+		JSON(model.NewSuccessMessageResponse("User updated", fiber.StatusOK))
 }

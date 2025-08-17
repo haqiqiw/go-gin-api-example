@@ -1,8 +1,8 @@
 package model
 
 type CreateUserRequest struct {
-	Username string `json:"username" validate:"required,min=8,max=64"`
-	Password string `json:"password" validate:"required,min=8,max=64"`
+	Username string `json:"username" validate:"required,min=4,max=64"`
+	Password string `json:"password" validate:"required,min=4,max=64"`
 }
 
 type SearchUserRequest struct {

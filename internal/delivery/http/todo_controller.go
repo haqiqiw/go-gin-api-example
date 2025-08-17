@@ -198,6 +198,6 @@ func (c *TodoController) Update(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.
-		Status(fiber.StatusCreated).
-		JSON(model.NewSuccessMessageResponse("Todo updated", fiber.StatusCreated))
+		Status(fiber.StatusOK).
+		JSON(model.NewSuccessMessageResponse("Todo updated", fiber.StatusOK))
 }

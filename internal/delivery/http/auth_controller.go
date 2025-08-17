@@ -14,16 +14,14 @@ type AuthController struct {
 	Log         *zap.Logger
 	Validate    *validator.Validate
 	AuthUsecase usecase.AuthUsecase
-	UserUsecase usecase.UserUsecase
 }
 
 func NewAuthController(log *zap.Logger, validate *validator.Validate,
-	authUsecase usecase.AuthUsecase, userUsecase usecase.UserUsecase) *AuthController {
+	authUsecase usecase.AuthUsecase) *AuthController {
 	return &AuthController{
 		Log:         log,
 		Validate:    validate,
 		AuthUsecase: authUsecase,
-		UserUsecase: userUsecase,
 	}
 }
 
