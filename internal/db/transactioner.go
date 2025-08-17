@@ -12,6 +12,7 @@ type Executor interface {
 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
 }
 
+//go:generate mockery --name=Transactioner --structname Transactioner --outpkg=mocks --output=./../mocks
 type Transactioner interface {
 	Do(ctx context.Context, fn func(Executor) error) error
 }

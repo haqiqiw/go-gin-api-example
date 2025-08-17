@@ -7,6 +7,7 @@ import (
 	"go-api-example/internal/model"
 )
 
+//go:generate mockery --name=UserRepository --structname UserRepository --outpkg=mocks --output=./../mocks
 type UserRepository interface {
 	Create(ctx context.Context, exec db.Executor, user *entity.User) error
 	List(ctx context.Context, req *model.SearchUserRequest) ([]entity.User, int, error)
@@ -16,6 +17,7 @@ type UserRepository interface {
 	CountByUsername(ctx context.Context, username string) (int, error)
 }
 
+//go:generate mockery --name=TodoRepository --structname TodoRepository --outpkg=mocks --output=./../mocks
 type TodoRepository interface {
 	Create(ctx context.Context, user *entity.Todo) error
 	List(ctx context.Context, req *model.SearchTodoRequest) ([]entity.Todo, int, error)

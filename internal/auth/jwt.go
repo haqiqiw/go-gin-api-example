@@ -17,6 +17,7 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
+//go:generate mockery --name=JWTToken --structname JWTToken --outpkg=mocks --output=./../mocks
 type JWTToken interface {
 	Create(userID string) (string, error)
 	Parse(jwtToken string) (*JWTClaims, error)

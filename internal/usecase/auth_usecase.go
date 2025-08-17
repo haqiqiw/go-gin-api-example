@@ -40,7 +40,7 @@ func (c *authUsecase) Login(ctx context.Context, req *model.LoginRequest) (*mode
 		return nil, fmt.Errorf("failed to find user by username: %w", err)
 	}
 	if user == nil {
-		return nil, model.NewCustomError(fiber.StatusNotFound, model.ErrInvalidPassword)
+		return nil, model.NewCustomError(fiber.StatusNotFound, model.ErrUserNotFound)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))

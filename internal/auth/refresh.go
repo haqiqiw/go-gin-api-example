@@ -11,6 +11,7 @@ const (
 	RefreshTTL       = 7 * 24 * time.Hour
 )
 
+//go:generate mockery --name=RefreshToken --structname RefreshToken --outpkg=mocks --output=./../mocks
 type RefreshToken interface {
 	Create() string
 }
