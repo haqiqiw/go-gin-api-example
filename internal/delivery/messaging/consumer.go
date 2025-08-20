@@ -137,7 +137,7 @@ func (c *consumer) executeWithRetry(ctx context.Context, message *kafka.Message)
 		go func() {
 			defer func() {
 				if r := recover(); r != nil {
-					resultCh <- fmt.Errorf("handler panic: %v", r)
+					resultCh <- fmt.Errorf("handler panic: %+v", r)
 				}
 			}()
 			resultCh <- c.Handler(handlerCtx, message)
@@ -158,7 +158,7 @@ func (c *consumer) executeWithRetry(ctx context.Context, message *kafka.Message)
 		if attempt < c.Config.MaxRetries {
 			backoff := c.Config.BackoffDuration * time.Duration(1<<attempt+1)
 			c.Logger.Error(
-				fmt.Sprintf("handler error, retrying %d/%d after %v", attempt+1, c.Config.MaxRetries, backoff),
+				fmt.Sprintf("handler error, retrying %d/%d after %+v", attempt+1, c.Config.MaxRetries, backoff),
 				zap.String("topic", c.Config.Topic),
 				zap.String("key", string(message.Key)),
 				zap.Error(lastErr),

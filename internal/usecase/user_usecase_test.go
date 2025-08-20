@@ -33,7 +33,7 @@ func (s *UserUsecaseSuite) SetupTest() {
 	s.ctx = context.Background()
 }
 
-func (s *UserUsecaseSuite) TestUserRepository_Create() {
+func (s *UserUsecaseSuite) TestUserUsecase_Create() {
 	now := time.Now()
 
 	tests := []struct {
@@ -124,7 +124,7 @@ func (s *UserUsecaseSuite) TestUserRepository_Create() {
 	}
 }
 
-func (s *UserUsecaseSuite) TestUserRepository_List() {
+func (s *UserUsecaseSuite) TestUserUsecase_List() {
 	now := time.Now()
 
 	tests := []struct {
@@ -201,7 +201,7 @@ func (s *UserUsecaseSuite) TestUserRepository_List() {
 	}
 }
 
-func (s *UserUsecaseSuite) TestUserRepository_FindByID() {
+func (s *UserUsecaseSuite) TestUserUsecase_FindByID() {
 	now := time.Now()
 
 	tests := []struct {
@@ -267,7 +267,7 @@ func (s *UserUsecaseSuite) TestUserRepository_FindByID() {
 	}
 }
 
-func (s *UserUsecaseSuite) TestUserRepository_UpdateByID() {
+func (s *UserUsecaseSuite) TestUserUsecase_UpdateByID() {
 	oldPasswordHash, _ := bcrypt.GenerateFromPassword([]byte("old_password"), bcrypt.DefaultCost)
 
 	now := time.Now()

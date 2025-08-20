@@ -26,7 +26,7 @@ func (s *TodoUsecaseSuite) SetupTest() {
 	s.ctx = context.Background()
 }
 
-func (s *TodoUsecaseSuite) TestTodoRepository_Create() {
+func (s *TodoUsecaseSuite) TestTodoUsecase_Create() {
 	description := "description"
 	now := time.Now()
 
@@ -99,7 +99,7 @@ func (s *TodoUsecaseSuite) TestTodoRepository_Create() {
 	}
 }
 
-func (s *TodoUsecaseSuite) TestTodoRepository_List() {
+func (s *TodoUsecaseSuite) TestTodoUsecase_List() {
 	description := "description"
 	now := time.Now()
 
@@ -181,7 +181,7 @@ func (s *TodoUsecaseSuite) TestTodoRepository_List() {
 	}
 }
 
-func (s *TodoUsecaseSuite) TestTodoRepository_FindByID() {
+func (s *TodoUsecaseSuite) TestTodoUsecase_FindByID() {
 	description := "description"
 	now := time.Now()
 
@@ -274,7 +274,7 @@ func (s *TodoUsecaseSuite) TestTodoRepository_FindByID() {
 	}
 }
 
-func (s *TodoUsecaseSuite) TestTodoRepository_UpdateByID() {
+func (s *TodoUsecaseSuite) TestTodoUsecase_UpdateByID() {
 	description := "description"
 	now := time.Now()
 

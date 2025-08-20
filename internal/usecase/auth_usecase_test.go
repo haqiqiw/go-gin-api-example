@@ -38,7 +38,7 @@ func (s *AuthUsecaseSuite) SetupTest() {
 	s.ctx = context.Background()
 }
 
-func (s *UserUsecaseSuite) TestAuthRepository_Login() {
+func (s *AuthUsecaseSuite) TestAuthUsecase_Login() {
 	passwordHash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	now := time.Now()
 
@@ -222,7 +222,7 @@ func (s *UserUsecaseSuite) TestAuthRepository_Login() {
 	}
 }
 
-func (s *UserUsecaseSuite) TestAuthRepository_Logout() {
+func (s *AuthUsecaseSuite) TestAuthUsecase_Logout() {
 	now := time.Now()
 
 	tests := []struct {
@@ -349,7 +349,7 @@ func (s *UserUsecaseSuite) TestAuthRepository_Logout() {
 	}
 }
 
-func (s *UserUsecaseSuite) TestAuthRepository_Refresh() {
+func (s *AuthUsecaseSuite) TestAuthUsecase_Refresh() {
 	tests := []struct {
 		name       string
 		request    *model.RefreshRequest

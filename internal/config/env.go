@@ -45,7 +45,7 @@ func NewEnv() (*Env, error) {
 		AppName:         getEnvString("APP_NAME", "api-example"),
 		AppPort:         getEnvInt("APP_PORT", 8500),
 		AppReadTimeout:  getEnvInt("APP_READ_TIMEOUT", 60),
-		AppWriteTimeout: getEnvInt("APP_WRITE_TIMEOU", 60),
+		AppWriteTimeout: getEnvInt("APP_WRITE_TIMEOUT", 60),
 
 		DBHost:            getEnvString("DATABASE_HOST", "127.0.0.1"),
 		DBPort:            getEnvString("DATABASE_PORT", "3306"),

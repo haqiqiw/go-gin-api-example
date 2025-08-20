@@ -28,12 +28,12 @@ func main() {
 
 	env, err := config.NewEnv()
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to initialize env: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to initialize env: %+v", err))
 	}
 
 	database, err := config.NewDatabase(env)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to initialize database: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to initialize database: %+v", err))
 	}
 
 	todoRepository := repository.NewTodoRepository(database)
@@ -41,7 +41,7 @@ func main() {
 
 	kafkaConsumer, err := config.NewKafkaConsumer(env, logger)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to initialize user consumer: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to initialize user consumer: %+v", err))
 	}
 
 	userHandler := messaging.NewUserHandler(logger, todoUsecase)

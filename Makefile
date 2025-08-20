@@ -2,6 +2,8 @@ MIGRATE = migrate
 MIGRATION_DIR = ./db/migrations
 DB_URL = "mysql://root:root@tcp(localhost:3306)/api-example"
 
+.PHONY: test
+
 docker-up:
 	docker-compose up -d
 
@@ -29,3 +31,6 @@ run-api:
 
 run-consumer:
 	go run cmd/consumer/main.go
+
+test:
+	go test -v ./...

@@ -15,13 +15,13 @@ func NewFiber(env *Env, logger *zap.Logger) *fiber.App {
 		AppName:      env.AppName,
 		ReadTimeout:  time.Duration(env.AppReadTimeout) * time.Second,
 		WriteTimeout: time.Duration(env.AppWriteTimeout) * time.Second,
-		ErrorHandler: NewErrorHandler(logger),
+		ErrorHandler: newErrorHandler(logger),
 	}
 
 	return fiber.New(fCfg)
 }
 
-func NewErrorHandler(logger *zap.Logger) fiber.ErrorHandler {
+func newErrorHandler(logger *zap.Logger) fiber.ErrorHandler {
 	return func(ctx *fiber.Ctx, err error) error {
 		logger.Error(err.Error(),
 			zap.Any("request_id", middleware.GetRequestID(ctx)),

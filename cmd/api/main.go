@@ -23,17 +23,17 @@ func main() {
 
 	env, err := config.NewEnv()
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to initialize env: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to initialize env: %+v", err))
 	}
 
 	database, err := config.NewDatabase(env)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to initialize database: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to initialize database: %+v", err))
 	}
 
 	producer, err := config.NewKafkaProducer(env, logger)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to initialize producer: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to initialize producer: %+v", err))
 	}
 
 	tx := db.NewTransactioner(database)
@@ -62,7 +62,7 @@ func main() {
 
 		err := app.ShutdownWithContext(ctx)
 		if err != nil {
-			logger.Fatal(fmt.Sprintf("failed to shutdown server: %v", err))
+			logger.Fatal(fmt.Sprintf("failed to shutdown server: %+v", err))
 		}
 	}()
 
@@ -70,7 +70,7 @@ func main() {
 
 	err = app.Listen(fmt.Sprintf(":%d", env.AppPort))
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to starting server: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to starting server: %+v", err))
 	}
 
 	logger.Info("server exited properly")
