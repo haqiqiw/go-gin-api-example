@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
@@ -23,7 +23,7 @@ import (
 type ApiConfig struct {
 	DB       *sql.DB
 	TX       db.Transactioner
-	App      *fiber.App
+	App      *gin.Engine
 	Log      *zap.Logger
 	Validate *validator.Validate
 	Config   *Env

@@ -67,7 +67,7 @@ func (s *UserUsecaseSuite) TestUserUsecase_Create() {
 					Return(1, nil)
 			},
 			wantUser:   nil,
-			wantErrMsg: "Username already exist",
+			wantErrMsg: "username already exist",
 		},
 		{
 			name: "error on create",
@@ -307,7 +307,7 @@ func (s *UserUsecaseSuite) TestUserUsecase_UpdateByID() {
 					UpdatedAt: now,
 				}, nil)
 			},
-			wantErrMsg: "Invalid old password",
+			wantErrMsg: "invalid old password",
 		},
 		{
 			name: "error on update",

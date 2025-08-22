@@ -1,33 +1,24 @@
 package model
 
-const (
-	ErrUsernameAlreadyExist = 1000
-	ErrUserNotFound         = 1002
-	ErrInvalidPassword      = 1003
-	ErrInvalidRefreshToken  = 1004
-	ErrInvalidLogoutSession = 1005
-	ErrInvalidUserID        = 1006
-	ErrInvalidOldPassword   = 1007
-	ErrInternalServerError  = 1500
+import "net/http"
+
+var (
+	ErrInternalServerError        = NewCustomError(http.StatusInternalServerError, 100, "internal server error")
+	ErrUnauthorized               = NewCustomError(http.StatusUnauthorized, 101, "unauthorized")
+	ErrBadRequest                 = NewCustomError(http.StatusBadRequest, 102, "bad request")
+	ErrForbidden                  = NewCustomError(http.StatusForbidden, 103, "forbidden")
+	ErrMissingOrInvalidAuthHeader = NewCustomError(http.StatusUnauthorized, 104, "missing or invalid auth header")
+	ErrInvalidAuthToken           = NewCustomError(http.StatusUnauthorized, 105, "invalid auth token")
+	ErrTokenRevoked               = NewCustomError(http.StatusUnauthorized, 106, "token revoked")
+
+	ErrUsernameAlreadyExist = NewCustomError(http.StatusBadRequest, 1000, "username already exist")
+	ErrUserNotFound         = NewCustomError(http.StatusNotFound, 1002, "username not found")
+	ErrInvalidPassword      = NewCustomError(http.StatusUnauthorized, 1003, "invalid password")
+	ErrInvalidRefreshToken  = NewCustomError(http.StatusUnauthorized, 1004, "invalid refresh token")
+	ErrInvalidLogoutSession = NewCustomError(http.StatusUnauthorized, 1005, "invalid logout session")
+	ErrInvalidUserID        = NewCustomError(http.StatusUnprocessableEntity, 1006, "invalid user id")
+	ErrInvalidOldPassword   = NewCustomError(http.StatusBadRequest, 1007, "invalid old password")
 )
-
-var errorMessages = map[int]string{
-	ErrUsernameAlreadyExist: "Username already exist",
-	ErrUserNotFound:         "Username not found",
-	ErrInvalidPassword:      "Invalid password",
-	ErrInvalidRefreshToken:  "Invalid refresh token",
-	ErrInvalidLogoutSession: "Invalid logout session",
-	ErrInvalidUserID:        "Invalid user id",
-	ErrInvalidOldPassword:   "Invalid old password",
-	ErrInternalServerError:  "Internal server error",
-}
-
-func MessageFor(code int) string {
-	if msg, ok := errorMessages[code]; ok {
-		return msg
-	}
-	return "Unknown error"
-}
 
 type ErrorItem struct {
 	Code    int    `json:"code"`
@@ -39,26 +30,26 @@ type CustomError struct {
 	Errors     []ErrorItem `json:"errors"`
 }
 
+func (c *CustomError) Append(ei ErrorItem) {
+	c.Errors = append(c.Errors, ei)
+}
+
 func (c *CustomError) Error() string {
 	if len(c.Errors) == 0 {
-		return "No errors"
+		return "empty error"
 	}
 
 	return c.Errors[0].Message
 }
 
-func NewCustomError(httpStatus int, codes ...int) *CustomError {
-	errors := make([]ErrorItem, len(codes))
-
-	for i, code := range codes {
-		errors[i] = ErrorItem{
-			Code:    code,
-			Message: MessageFor(code),
-		}
-	}
-
+func NewCustomError(httpStatus int, code int, msg string) *CustomError {
 	return &CustomError{
 		HTTPStatus: httpStatus,
-		Errors:     errors,
+		Errors: []ErrorItem{
+			{
+				Code:    code,
+				Message: msg,
+			},
+		},
 	}
 }

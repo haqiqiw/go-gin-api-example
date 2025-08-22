@@ -9,7 +9,6 @@ import (
 	"go-api-example/internal/storage"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -40,12 +39,12 @@ func (c *authUsecase) Login(ctx context.Context, req *model.LoginRequest) (*mode
 		return nil, fmt.Errorf("failed to find user by username: %w", err)
 	}
 	if user == nil {
-		return nil, model.NewCustomError(fiber.StatusNotFound, model.ErrUserNotFound)
+		return nil, model.ErrUserNotFound
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
-		return nil, model.NewCustomError(fiber.StatusUnauthorized, model.ErrInvalidPassword)
+		return nil, model.ErrInvalidPassword
 	}
 
 	accessToken, err := c.JWTToken.Create(fmt.Sprint(user.ID))
@@ -73,21 +72,21 @@ func (c *authUsecase) Logout(ctx context.Context, req *model.LogoutRequest) erro
 	userID, err := c.RedisClient.Get(ctx, refreshKey).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return model.NewCustomError(fiber.StatusUnauthorized, model.ErrInvalidRefreshToken)
+			return model.ErrInvalidRefreshToken
 		} else {
 			return fmt.Errorf("failed to get refresh token: %w", err)
 		}
 	}
 
 	if userID != req.Claims.UserID {
-		return model.NewCustomError(fiber.StatusUnauthorized, model.ErrInvalidLogoutSession)
+		return model.ErrInvalidLogoutSession
 	}
 
 	revokeKey := fmt.Sprintf("%s:%s", auth.PrefixRevokeKey, req.Claims.ID)
 	revokeTTL := time.Until(req.Claims.ExpiresAt.Time)
 	err = c.RedisClient.SetEx(ctx, revokeKey, "true", revokeTTL).Err()
 	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to set revoke token")
+		return fmt.Errorf("failed to set revoke token: %w", err)
 	}
 
 	_ = c.RedisClient.Del(ctx, refreshKey)
@@ -101,14 +100,14 @@ func (c *authUsecase) Refresh(ctx context.Context, req *model.RefreshRequest) (*
 	userID, err := c.RedisClient.Get(ctx, oldRefreshKey).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return nil, model.NewCustomError(fiber.StatusUnauthorized, model.ErrInvalidRefreshToken)
+			return nil, model.ErrInvalidRefreshToken
 		} else {
 			return nil, fmt.Errorf("failed to get refresh token: %w", err)
 		}
 	}
 
 	if len(userID) == 0 {
-		return nil, model.NewCustomError(fiber.StatusUnprocessableEntity, model.ErrInvalidUserID)
+		return nil, model.ErrInvalidUserID
 	}
 
 	newAccessToken, err := c.JWTToken.Create(userID)

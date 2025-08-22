@@ -7,7 +7,6 @@ import (
 	"go-api-example/internal/model"
 	"go-api-example/internal/model/serializer"
 
-	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
@@ -59,7 +58,7 @@ func (c *todoUsecase) FindByID(ctx context.Context, req *model.GetTodoRequest) (
 	}
 
 	if req.UserID != todo.UserID {
-		return nil, fiber.ErrForbidden
+		return nil, model.ErrForbidden
 	}
 
 	return serializer.TodoToResponse(todo), nil
@@ -72,7 +71,7 @@ func (c *todoUsecase) UpdateByID(ctx context.Context, req *model.UpdateTodoReque
 	}
 
 	if req.UserID != todo.UserID {
-		return fiber.ErrForbidden
+		return model.ErrForbidden
 	}
 
 	err = c.TodoRepository.UpdateByID(ctx, req)

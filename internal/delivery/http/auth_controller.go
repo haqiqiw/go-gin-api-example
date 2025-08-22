@@ -4,9 +4,10 @@ import (
 	"go-api-example/internal/delivery/http/middleware"
 	"go-api-example/internal/model"
 	"go-api-example/internal/usecase"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
@@ -25,87 +26,97 @@ func NewAuthController(log *zap.Logger, validate *validator.Validate,
 	}
 }
 
-func (c *AuthController) Login(ctx *fiber.Ctx) error {
+func (c *AuthController) Login(ctx *gin.Context) {
 	request := new(model.LoginRequest)
-
-	err := ctx.BodyParser(request)
+	err := ctx.ShouldBindJSON(request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to parse request body", err)
-		return fiber.ErrBadRequest
+		ctx.Error(model.ErrBadRequest)
+		return
 	}
 
 	err = c.Validate.Struct(request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to validate request body", err)
-		return fiber.ErrBadRequest
+		ctx.Error(model.ErrBadRequest)
+		return
 	}
 
-	res, err := c.AuthUsecase.Login(ctx.UserContext(), request)
+	res, err := c.AuthUsecase.Login(ctx.Request.Context(), request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to login", err)
-		return err
+		ctx.Error(err)
+		return
 	}
 
-	return ctx.
-		Status(fiber.StatusOK).
-		JSON(model.NewSuccessResponse(res, fiber.StatusOK))
+	ctx.JSON(
+		http.StatusOK,
+		model.NewSuccessResponse(res, http.StatusOK),
+	)
 }
 
-func (c *AuthController) Logout(ctx *fiber.Ctx) error {
+func (c *AuthController) Logout(ctx *gin.Context) {
 	claims, err := middleware.GetJWTClaims(ctx)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to get jwt claims", err)
-		return fiber.ErrUnauthorized
+		ctx.Error(model.ErrUnauthorized)
+		return
 	}
 
 	request := new(model.LogoutRequest)
-
-	err = ctx.BodyParser(request)
+	err = ctx.ShouldBindJSON(request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to parse request body", err)
-		return fiber.ErrBadRequest
+		ctx.Error(model.ErrBadRequest)
+		return
 	}
 
 	err = c.Validate.Struct(request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to validate request body", err)
-		return fiber.ErrBadRequest
+		ctx.Error(model.ErrBadRequest)
+		return
 	}
 
 	request.Claims = claims
-	err = c.AuthUsecase.Logout(ctx.UserContext(), request)
+	err = c.AuthUsecase.Logout(ctx.Request.Context(), request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to logout", err)
-		return err
+		ctx.Error(err)
+		return
 	}
 
-	return ctx.
-		Status(fiber.StatusOK).
-		JSON(model.NewSuccessMessageResponse("Logged out", fiber.StatusOK))
+	ctx.JSON(
+		http.StatusOK,
+		model.NewSuccessMessageResponse("Logged out", http.StatusOK),
+	)
 }
 
-func (c *AuthController) RefreshToken(ctx *fiber.Ctx) error {
+func (c *AuthController) RefreshToken(ctx *gin.Context) {
 	request := new(model.RefreshRequest)
-
-	err := ctx.BodyParser(request)
+	err := ctx.ShouldBindJSON(request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to parse request body", err)
-		return fiber.ErrBadRequest
+		ctx.Error(model.ErrBadRequest)
+		return
 	}
 
 	err = c.Validate.Struct(request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to validate request body", err)
-		return fiber.ErrBadRequest
+		ctx.Error(model.ErrBadRequest)
+		return
 	}
 
-	res, err := c.AuthUsecase.Refresh(ctx.UserContext(), request)
+	res, err := c.AuthUsecase.Refresh(ctx.Request.Context(), request)
 	if err != nil {
 		LogWarn(ctx, c.Log, "failed to refresh token", err)
-		return err
+		ctx.Error(err)
+		return
 	}
 
-	return ctx.
-		Status(fiber.StatusOK).
-		JSON(model.NewSuccessResponse(res, fiber.StatusOK))
+	ctx.JSON(
+		http.StatusOK,
+		model.NewSuccessResponse(res, http.StatusOK),
+	)
 }

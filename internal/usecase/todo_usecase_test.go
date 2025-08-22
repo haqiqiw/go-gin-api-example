@@ -223,7 +223,7 @@ func (s *TodoUsecaseSuite) TestTodoUsecase_FindByID() {
 				}, nil)
 			},
 			wantTodo:   nil,
-			wantErrMsg: "Forbidden",
+			wantErrMsg: "forbidden",
 		},
 		{
 			name: "success",
@@ -321,7 +321,7 @@ func (s *TodoUsecaseSuite) TestTodoUsecase_UpdateByID() {
 					UpdatedAt:   now,
 				}, nil)
 			},
-			wantErrMsg: "Forbidden",
+			wantErrMsg: "forbidden",
 		},
 		{
 			name: "error on update",

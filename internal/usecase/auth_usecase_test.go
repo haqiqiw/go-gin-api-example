@@ -85,7 +85,7 @@ func (s *AuthUsecaseSuite) TestAuthUsecase_Login() {
 					Return(nil, nil)
 			},
 			wantRes:    nil,
-			wantErrMsg: "Username not found",
+			wantErrMsg: "username not found",
 		},
 		{
 			name: "error invalid password",
@@ -109,7 +109,7 @@ func (s *AuthUsecaseSuite) TestAuthUsecase_Login() {
 				}, nil)
 			},
 			wantRes:    nil,
-			wantErrMsg: "Invalid password",
+			wantErrMsg: "invalid password",
 		},
 		{
 			name: "error on create jwt token",
@@ -244,7 +244,7 @@ func (s *AuthUsecaseSuite) TestAuthUsecase_Logout() {
 				getCmd.SetErr(redis.Nil)
 				rc.On("Get", mock.Anything, "refresh-token:zxc-123").Return(getCmd)
 			},
-			wantErrMsg: "Invalid refresh token",
+			wantErrMsg: "invalid refresh token",
 		},
 		{
 			name: "error on get refresh token cache",
@@ -274,7 +274,7 @@ func (s *AuthUsecaseSuite) TestAuthUsecase_Logout() {
 				getCmd.SetVal("2")
 				rc.On("Get", mock.Anything, "refresh-token:zxc-123").Return(getCmd)
 			},
-			wantErrMsg: "Invalid logout session",
+			wantErrMsg: "invalid logout session",
 		},
 		{
 			name: "error on set revoke token cache",
@@ -298,7 +298,7 @@ func (s *AuthUsecaseSuite) TestAuthUsecase_Logout() {
 				rc.On("SetEx", mock.Anything, "revoke-jwt-token:asd-789", "true", mock.Anything).
 					Return(setCmd)
 			},
-			wantErrMsg: "failed to set revoke token",
+			wantErrMsg: "failed to set revoke token: something error",
 		},
 		{
 			name: "success",
@@ -375,7 +375,7 @@ func (s *AuthUsecaseSuite) TestAuthUsecase_Refresh() {
 					Return(getCmd)
 			},
 			wantRes:    nil,
-			wantErrMsg: "Invalid refresh token",
+			wantErrMsg: "invalid refresh token",
 		},
 		{
 			name: "error on get refresh token cache",
@@ -415,7 +415,7 @@ func (s *AuthUsecaseSuite) TestAuthUsecase_Refresh() {
 					Return(getCmd)
 			},
 			wantRes:    nil,
-			wantErrMsg: "Invalid user id",
+			wantErrMsg: "invalid user id",
 		},
 		{
 			name: "error on create jwt token",

@@ -5,12 +5,12 @@ import (
 	"go-api-example/internal/auth"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
-func NewAuthMiddleware(userID uint64) fiber.Handler {
+func NewAuthMiddleware(userID uint64) gin.HandlerFunc {
 	now := time.Now()
 	claims := &auth.JWTClaims{
 		UserID: fmt.Sprint(userID),
@@ -21,8 +21,8 @@ func NewAuthMiddleware(userID uint64) fiber.Handler {
 		},
 	}
 
-	return func(c *fiber.Ctx) error {
-		c.Locals("claims", claims)
-		return c.Next()
+	return func(ctx *gin.Context) {
+		ctx.Set("claims", claims)
+		ctx.Next()
 	}
 }

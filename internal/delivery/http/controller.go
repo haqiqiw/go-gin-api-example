@@ -2,21 +2,17 @@ package http
 
 import (
 	"fmt"
-	"go-api-example/internal/delivery/http/middleware"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-contrib/requestid"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func LogWarn(ctx *fiber.Ctx, logger *zap.Logger, msg string, err error) {
-	reqID := middleware.GetRequestID(ctx)
-	path := ctx.Path()
-	method := ctx.Method()
-
+func LogWarn(ctx *gin.Context, logger *zap.Logger, msg string, err error) {
 	logger.Warn(fmt.Sprintf("%s: %+v", msg, err),
-		zap.Any("request_id", reqID),
-		zap.Any("path", path),
-		zap.Any("method", method),
+		zap.Any("request_id", requestid.Get(ctx)),
+		zap.Any("path", ctx.Request.RequestURI),
+		zap.Any("method", ctx.Request.Method),
 		zap.Error(err),
 	)
 }

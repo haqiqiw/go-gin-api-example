@@ -5,18 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"go-api-example/internal/config"
-	"go-api-example/internal/delivery/http"
+	internalHttp "go-api-example/internal/delivery/http"
 	"go-api-example/internal/mocks"
 	"go-api-example/internal/model"
 	"go-api-example/test"
-	"io"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -26,17 +25,11 @@ type TodoControllerSuite struct {
 	suite.Suite
 	log      *zap.Logger
 	validate *validator.Validate
-	env      *config.Env
 }
 
 func (s *TodoControllerSuite) SetupTest() {
 	s.log = zap.NewNop()
 	s.validate = validator.New()
-	s.env = &config.Env{
-		AppName:         "api-example",
-		AppReadTimeout:  60,
-		AppWriteTimeout: 60,
-	}
 }
 
 func (s *TodoControllerSuite) TestTodoController_Create() {
@@ -51,8 +44,8 @@ func (s *TodoControllerSuite) TestTodoController_Create() {
 			name:       "empty body",
 			body:       nil,
 			mockFunc:   func(a *mocks.TodoUsecase) {},
-			wantStatus: fiber.StatusBadRequest,
-			wantRes:    `{"errors":[{"code":400,"message":"Bad Request"}],"meta":{"http_status":400}}`,
+			wantStatus: http.StatusBadRequest,
+			wantRes:    `{"errors":[{"code":102,"message":"bad request"}],"meta":{"http_status":400}}`,
 		},
 		{
 			name: "error on validate body",
@@ -61,8 +54,8 @@ func (s *TodoControllerSuite) TestTodoController_Create() {
 				"description": "",
 			},
 			mockFunc:   func(a *mocks.TodoUsecase) {},
-			wantStatus: fiber.StatusBadRequest,
-			wantRes:    `{"errors":[{"code":400,"message":"Bad Request"}],"meta":{"http_status":400}}`,
+			wantStatus: http.StatusBadRequest,
+			wantRes:    `{"errors":[{"code":102,"message":"bad request"}],"meta":{"http_status":400}}`,
 		},
 		{
 			name: "error on create",
@@ -74,8 +67,8 @@ func (s *TodoControllerSuite) TestTodoController_Create() {
 				a.On("Create", mock.Anything, mock.Anything).
 					Return(nil, errors.New("something error"))
 			},
-			wantStatus: fiber.StatusInternalServerError,
-			wantRes:    `{"errors":[{"code":1500,"message":"Internal server error"}],"meta":{"http_status":500}}`,
+			wantStatus: http.StatusInternalServerError,
+			wantRes:    `{"errors":[{"code":100,"message":"internal server error"}],"meta":{"http_status":500}}`,
 		},
 		{
 			name: "success",
@@ -95,7 +88,7 @@ func (s *TodoControllerSuite) TestTodoController_Create() {
 					UpdatedAt:   now.Format(time.RFC3339),
 				}, nil)
 			},
-			wantStatus: fiber.StatusCreated,
+			wantStatus: http.StatusCreated,
 			wantRes: `{"data":{"id":1,"user_id":1,"title":"dummy title","description":"dummy description",` +
 				`"status":"pending","created_at":"2025-10-27T13:07:31Z","updated_at":"2025-10-27T13:07:31Z"},` +
 				`"meta":{"http_status":201}}`,
@@ -107,22 +100,21 @@ func (s *TodoControllerSuite) TestTodoController_Create() {
 			tu := mocks.NewTodoUsecase(s.T())
 			tt.mockFunc(tu)
 
-			tc := http.NewTodoController(s.log, s.validate, tu)
+			tc := internalHttp.NewTodoController(s.log, s.validate, tu)
 
-			app := config.NewFiber(s.env, s.log)
+			app := config.NewGin(s.log)
 			app.Use(test.NewAuthMiddleware(1))
-			app.Post("/api/todos", tc.Create)
+			app.POST("/api/todos", tc.Create)
 
 			reqBody, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest("POST", "/api/todos", bytes.NewReader(reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			resp, err := app.Test(req)
-			s.Nil(err)
+			rec := httptest.NewRecorder()
+			app.ServeHTTP(rec, req)
 
-			body, _ := io.ReadAll(resp.Body)
-			s.Equal(tt.wantStatus, resp.StatusCode)
-			s.Equal(tt.wantRes, strings.TrimSpace(string(body)))
+			s.Equal(tt.wantStatus, rec.Code)
+			s.Equal(tt.wantRes, strings.TrimSpace(rec.Body.String()))
 		})
 	}
 }
@@ -140,8 +132,8 @@ func (s *TodoControllerSuite) TestTodoController_Search() {
 				a.On("List", mock.Anything, mock.Anything).
 					Return([]model.TodoResponse{}, 0, errors.New("something error"))
 			},
-			wantStatus: fiber.StatusInternalServerError,
-			wantRes:    `{"errors":[{"code":1500,"message":"Internal server error"}],"meta":{"http_status":500}}`,
+			wantStatus: http.StatusInternalServerError,
+			wantRes:    `{"errors":[{"code":100,"message":"internal server error"}],"meta":{"http_status":500}}`,
 		},
 		{
 			name: "success",
@@ -160,7 +152,7 @@ func (s *TodoControllerSuite) TestTodoController_Search() {
 						},
 					}, 1, nil)
 			},
-			wantStatus: fiber.StatusOK,
+			wantStatus: http.StatusOK,
 			wantRes: `{"data":[{"id":1,"user_id":1,"title":"dummy title","description":"dummy description",` +
 				`"status":"pending","created_at":"2025-10-27T13:07:31Z","updated_at":"2025-10-27T13:07:31Z"}],` +
 				`"meta":{"limit":10,"offset":0,"total":1,"http_status":200}}`,
@@ -172,21 +164,20 @@ func (s *TodoControllerSuite) TestTodoController_Search() {
 			tu := mocks.NewTodoUsecase(s.T())
 			tt.mockFunc(tu)
 
-			tc := http.NewTodoController(s.log, s.validate, tu)
+			tc := internalHttp.NewTodoController(s.log, s.validate, tu)
 
-			app := config.NewFiber(s.env, s.log)
+			app := config.NewGin(s.log)
 			app.Use(test.NewAuthMiddleware(1))
-			app.Get("/api/todos", tc.Search)
+			app.GET("/api/todos", tc.Search)
 
 			req := httptest.NewRequest("GET", "/api/todos", nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			resp, err := app.Test(req)
-			s.Nil(err)
+			rec := httptest.NewRecorder()
+			app.ServeHTTP(rec, req)
 
-			body, _ := io.ReadAll(resp.Body)
-			s.Equal(tt.wantStatus, resp.StatusCode)
-			s.Equal(tt.wantRes, strings.TrimSpace(string(body)))
+			s.Equal(tt.wantStatus, rec.Code)
+			s.Equal(tt.wantRes, strings.TrimSpace(rec.Body.String()))
 		})
 	}
 }
@@ -204,8 +195,8 @@ func (s *TodoControllerSuite) TestTodoController_Get() {
 				a.On("FindByID", mock.Anything, mock.Anything).
 					Return(nil, errors.New("something error"))
 			},
-			wantStatus: fiber.StatusInternalServerError,
-			wantRes:    `{"errors":[{"code":1500,"message":"Internal server error"}],"meta":{"http_status":500}}`,
+			wantStatus: http.StatusInternalServerError,
+			wantRes:    `{"errors":[{"code":100,"message":"internal server error"}],"meta":{"http_status":500}}`,
 		},
 		{
 			name: "success",
@@ -221,7 +212,7 @@ func (s *TodoControllerSuite) TestTodoController_Get() {
 					UpdatedAt:   now.Format(time.RFC3339),
 				}, nil)
 			},
-			wantStatus: fiber.StatusOK,
+			wantStatus: http.StatusOK,
 			wantRes: `{"data":{"id":1,"user_id":1,"title":"dummy title","description":"dummy description",` +
 				`"status":"pending","created_at":"2025-10-27T13:07:31Z","updated_at":"2025-10-27T13:07:31Z"},` +
 				`"meta":{"http_status":200}}`,
@@ -233,21 +224,20 @@ func (s *TodoControllerSuite) TestTodoController_Get() {
 			tu := mocks.NewTodoUsecase(s.T())
 			tt.mockFunc(tu)
 
-			tc := http.NewTodoController(s.log, s.validate, tu)
+			tc := internalHttp.NewTodoController(s.log, s.validate, tu)
 
-			app := config.NewFiber(s.env, s.log)
+			app := config.NewGin(s.log)
 			app.Use(test.NewAuthMiddleware(1))
-			app.Get("/api/todos/:id", tc.Get)
+			app.GET("/api/todos/:id", tc.Get)
 
 			req := httptest.NewRequest("GET", "/api/todos/1", nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			resp, err := app.Test(req)
-			s.Nil(err)
+			rec := httptest.NewRecorder()
+			app.ServeHTTP(rec, req)
 
-			body, _ := io.ReadAll(resp.Body)
-			s.Equal(tt.wantStatus, resp.StatusCode)
-			s.Equal(tt.wantRes, strings.TrimSpace(string(body)))
+			s.Equal(tt.wantStatus, rec.Code)
+			s.Equal(tt.wantRes, strings.TrimSpace(rec.Body.String()))
 		})
 	}
 }
@@ -264,8 +254,8 @@ func (s *TodoControllerSuite) TestTodoController_Update() {
 			name:       "empty body",
 			body:       nil,
 			mockFunc:   func(a *mocks.TodoUsecase) {},
-			wantStatus: fiber.StatusBadRequest,
-			wantRes:    `{"errors":[{"code":400,"message":"Bad Request"}],"meta":{"http_status":400}}`,
+			wantStatus: http.StatusBadRequest,
+			wantRes:    `{"errors":[{"code":102,"message":"bad request"}],"meta":{"http_status":400}}`,
 		},
 		{
 			name: "error on validate body",
@@ -275,8 +265,8 @@ func (s *TodoControllerSuite) TestTodoController_Update() {
 				"status":      "",
 			},
 			mockFunc:   func(a *mocks.TodoUsecase) {},
-			wantStatus: fiber.StatusBadRequest,
-			wantRes:    `{"errors":[{"code":400,"message":"Bad Request"}],"meta":{"http_status":400}}`,
+			wantStatus: http.StatusBadRequest,
+			wantRes:    `{"errors":[{"code":102,"message":"bad request"}],"meta":{"http_status":400}}`,
 		},
 		{
 			name: "error on update",
@@ -289,8 +279,8 @@ func (s *TodoControllerSuite) TestTodoController_Update() {
 				a.On("UpdateByID", mock.Anything, mock.Anything).
 					Return(errors.New("something error"))
 			},
-			wantStatus: fiber.StatusInternalServerError,
-			wantRes:    `{"errors":[{"code":1500,"message":"Internal server error"}],"meta":{"http_status":500}}`,
+			wantStatus: http.StatusInternalServerError,
+			wantRes:    `{"errors":[{"code":100,"message":"internal server error"}],"meta":{"http_status":500}}`,
 		},
 		{
 			name: "success",
@@ -302,7 +292,7 @@ func (s *TodoControllerSuite) TestTodoController_Update() {
 			mockFunc: func(a *mocks.TodoUsecase) {
 				a.On("UpdateByID", mock.Anything, mock.Anything).Return(nil)
 			},
-			wantStatus: fiber.StatusOK,
+			wantStatus: http.StatusOK,
 			wantRes:    `{"message":"Todo updated","meta":{"http_status":200}}`,
 		},
 	}
@@ -312,22 +302,21 @@ func (s *TodoControllerSuite) TestTodoController_Update() {
 			tu := mocks.NewTodoUsecase(s.T())
 			tt.mockFunc(tu)
 
-			tc := http.NewTodoController(s.log, s.validate, tu)
+			tc := internalHttp.NewTodoController(s.log, s.validate, tu)
 
-			app := config.NewFiber(s.env, s.log)
+			app := config.NewGin(s.log)
 			app.Use(test.NewAuthMiddleware(1))
-			app.Patch("/api/todos/:id", tc.Update)
+			app.PATCH("/api/todos/:id", tc.Update)
 
 			reqBody, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest("PATCH", "/api/todos/1", bytes.NewReader(reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			resp, err := app.Test(req)
-			s.Nil(err)
+			rec := httptest.NewRecorder()
+			app.ServeHTTP(rec, req)
 
-			body, _ := io.ReadAll(resp.Body)
-			s.Equal(tt.wantStatus, resp.StatusCode)
-			s.Equal(tt.wantRes, strings.TrimSpace(string(body)))
+			s.Equal(tt.wantStatus, rec.Code)
+			s.Equal(tt.wantRes, strings.TrimSpace(rec.Body.String()))
 		})
 	}
 }

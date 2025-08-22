@@ -13,6 +13,7 @@ type Env struct {
 	AppPort         int
 	AppReadTimeout  int
 	AppWriteTimeout int
+	AppIdleTimeout  int
 
 	DBHost            string
 	DBPort            string
@@ -46,6 +47,7 @@ func NewEnv() (*Env, error) {
 		AppPort:         getEnvInt("APP_PORT", 8500),
 		AppReadTimeout:  getEnvInt("APP_READ_TIMEOUT", 60),
 		AppWriteTimeout: getEnvInt("APP_WRITE_TIMEOUT", 60),
+		AppIdleTimeout:  getEnvInt("APP_IDLE_TIMEOUT", 120),
 
 		DBHost:            getEnvString("DATABASE_HOST", "127.0.0.1"),
 		DBPort:            getEnvString("DATABASE_PORT", "3306"),

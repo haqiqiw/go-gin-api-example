@@ -8,12 +8,12 @@ import (
 	"go-api-example/internal/delivery/http/middleware"
 	"go-api-example/internal/mocks"
 	"go-api-example/internal/model"
-	"io"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/mock"
@@ -24,16 +24,10 @@ import (
 type AuthMiddlewareSuite struct {
 	suite.Suite
 	log *zap.Logger
-	env *config.Env
 }
 
 func (s *AuthMiddlewareSuite) SetupTest() {
 	s.log = zap.NewNop()
-	s.env = &config.Env{
-		AppName:         "api-example",
-		AppReadTimeout:  60,
-		AppWriteTimeout: 60,
-	}
 }
 
 func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
@@ -48,8 +42,8 @@ func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
 			name:       "empty auth token",
 			authToken:  "",
 			mockFunc:   func(rc *mocks.RedisClient, j *mocks.JWTToken) {},
-			wantStatus: fiber.StatusUnauthorized,
-			wantRes:    `{"errors":[{"code":401,"message":"missing or invalid auth header"}],"meta":{"http_status":401}}`,
+			wantStatus: http.StatusUnauthorized,
+			wantRes:    `{"errors":[{"code":104,"message":"missing or invalid auth header"}],"meta":{"http_status":401}}`,
 		},
 		{
 			name:      "invalid auth token",
@@ -58,8 +52,8 @@ func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
 				j.On("Parse", "dummy-token").
 					Return(nil, errors.New("something error"))
 			},
-			wantStatus: fiber.StatusUnauthorized,
-			wantRes:    `{"errors":[{"code":401,"message":"invalid auth token"}],"meta":{"http_status":401}}`,
+			wantStatus: http.StatusUnauthorized,
+			wantRes:    `{"errors":[{"code":105,"message":"invalid auth token"}],"meta":{"http_status":401}}`,
 		},
 		{
 			name:      "error on get revoked token cache",
@@ -75,8 +69,8 @@ func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
 				existsCmd.SetErr(errors.New("something error"))
 				rc.On("Exists", mock.Anything, "revoke-jwt-token:zxc-123").Return(existsCmd)
 			},
-			wantStatus: fiber.StatusUnauthorized,
-			wantRes:    `{"errors":[{"code":401,"message":"invalid auth token"}],"meta":{"http_status":401}}`,
+			wantStatus: http.StatusUnauthorized,
+			wantRes:    `{"errors":[{"code":105,"message":"invalid auth token"}],"meta":{"http_status":401}}`,
 		},
 		{
 			name:      "revoked auth token",
@@ -92,8 +86,8 @@ func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
 				existsCmd.SetVal(1)
 				rc.On("Exists", mock.Anything, "revoke-jwt-token:zxc-123").Return(existsCmd)
 			},
-			wantStatus: fiber.StatusUnauthorized,
-			wantRes:    `{"errors":[{"code":401,"message":"token revoked"}],"meta":{"http_status":401}}`,
+			wantStatus: http.StatusUnauthorized,
+			wantRes:    `{"errors":[{"code":106,"message":"token revoked"}],"meta":{"http_status":401}}`,
 		},
 		{
 			name:      "success",
@@ -109,7 +103,7 @@ func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
 				existsCmd.SetVal(0)
 				rc.On("Exists", mock.Anything, "revoke-jwt-token:zxc-123").Return(existsCmd)
 			},
-			wantStatus: fiber.StatusOK,
+			wantStatus: http.StatusOK,
 			wantRes:    `{"data":{"user_id":"1"},"meta":{"http_status":200}}`,
 		},
 	}
@@ -122,12 +116,13 @@ func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
 
 			authMw := middleware.NewAuthMiddleware(s.log, rc, jwt)
 
-			app := config.NewFiber(s.env, s.log)
+			app := config.NewGin(s.log)
 			app.Use(authMw)
-			app.Get("/", func(ctx *fiber.Ctx) error {
+			app.GET("/", func(ctx *gin.Context) {
 				claims, err := middleware.GetJWTClaims(ctx)
 				if err != nil {
-					return fiber.ErrUnauthorized
+					ctx.Error(err)
+					return
 				}
 
 				data := struct {
@@ -136,21 +131,21 @@ func (s *AuthMiddlewareSuite) TestAuthMiddleware_Handler() {
 					UserID: claims.UserID,
 				}
 
-				return ctx.
-					Status(fiber.StatusOK).
-					JSON(model.NewSuccessResponse(data, fiber.StatusOK))
+				ctx.JSON(
+					http.StatusOK,
+					model.NewSuccessResponse(data, http.StatusOK),
+				)
 			})
 
 			req := httptest.NewRequest("GET", "/", nil)
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Authorization", tt.authToken)
 
-			resp, err := app.Test(req)
-			s.Nil(err)
+			rec := httptest.NewRecorder()
+			app.ServeHTTP(rec, req)
 
-			body, _ := io.ReadAll(resp.Body)
-			s.Equal(tt.wantStatus, resp.StatusCode)
-			s.Equal(tt.wantRes, strings.TrimSpace(string(body)))
+			s.Equal(tt.wantStatus, rec.Code)
+			s.Equal(tt.wantRes, strings.TrimSpace(rec.Body.String()))
 		})
 	}
 }

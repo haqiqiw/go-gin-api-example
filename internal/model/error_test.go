@@ -8,33 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCustomError_MessageFor(t *testing.T) {
-	tests := []struct {
-		name    string
-		param   int
-		wantMsg string
-	}{
-		{
-			name:    "success",
-			param:   model.ErrUsernameAlreadyExist,
-			wantMsg: "Username already exist",
-		},
-		{
-			name:    "not found",
-			param:   9999,
-			wantMsg: "Unknown error",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			msg := model.MessageFor(tt.param)
-
-			assert.Equal(t, tt.wantMsg, msg)
-		})
-	}
-}
-
 func TestCustomError_Error(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -42,21 +15,21 @@ func TestCustomError_Error(t *testing.T) {
 		wantMsg   string
 	}{
 		{
-			name: "single error",
-			customErr: model.NewCustomError(
-				http.StatusBadRequest,
-				model.ErrUsernameAlreadyExist,
-			),
-			wantMsg: "Username already exist",
+			name:      "single error",
+			customErr: model.ErrUsernameAlreadyExist,
+			wantMsg:   "username already exist",
 		},
 		{
 			name: "multiple errors",
-			customErr: model.NewCustomError(
-				http.StatusBadRequest,
-				model.ErrInvalidUserID,
-				model.ErrInternalServerError,
-			),
-			wantMsg: "Invalid user id",
+			customErr: func() *model.CustomError {
+				err := model.ErrInvalidUserID
+				err.Append(model.ErrorItem{
+					Code:    9999,
+					Message: "another error",
+				})
+				return err
+			}(),
+			wantMsg: "invalid user id",
 		},
 		{
 			name: "empty errors",
@@ -64,7 +37,7 @@ func TestCustomError_Error(t *testing.T) {
 				HTTPStatus: http.StatusBadRequest,
 				Errors:     []model.ErrorItem{},
 			},
-			wantMsg: "No errors",
+			wantMsg: "empty error",
 		},
 	}
 

@@ -9,7 +9,6 @@ import (
 	"go-api-example/internal/model"
 	"go-api-example/internal/model/serializer"
 
-	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,7 +36,7 @@ func (c *userUsecase) Create(ctx context.Context, req *model.CreateUserRequest) 
 	}
 
 	if total > 0 {
-		return nil, model.NewCustomError(fiber.StatusBadRequest, model.ErrUsernameAlreadyExist)
+		return nil, model.ErrUsernameAlreadyExist
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -101,7 +100,7 @@ func (c *userUsecase) UpdateByID(ctx context.Context, req *model.UpdateUserReque
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.OldPassword))
 	if err != nil {
-		return model.NewCustomError(fiber.StatusBadRequest, model.ErrInvalidOldPassword)
+		return model.ErrInvalidOldPassword
 	}
 
 	newPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
