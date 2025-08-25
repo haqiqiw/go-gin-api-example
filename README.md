@@ -1,6 +1,8 @@
-# go-api-example
+# go-gin-api-example
 
 A sample Go API implementation using clean architecture.
+
+This repo is a reworked version of [go-api-example](https://github.com/haqiqiw/go-api-example) by replacing Fiber with Gin.
 
 ## Dependencies
 
@@ -10,7 +12,7 @@ A sample Go API implementation using clean architecture.
 
 ## Frameworks & Libraries
 
-- [Fiber](https://gofiber.io/) – HTTP framework for Go
+- [Gin](https://gin-gonic.com/) – HTTP framework for Go
 - [godotenv](https://github.com/joho/godotenv) – `.env` file loader
 - [golang-migrate](https://github.com/golang-migrate/migrate) – Database migration tool
 - [validator](https://github.com/go-playground/validator) – Struct and field validation
